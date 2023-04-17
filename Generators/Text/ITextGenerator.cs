@@ -1,6 +1,8 @@
-﻿namespace AIChatBot.Generators.Text;
+﻿using System.Threading.Tasks;
 
-public interface ITextGenerator
+namespace AIChatBot.Generators.Text;
+
+internal interface ITextGenerator
 {
-    // public void Ask(string prompt);
+    public Task<string> Ask(string prompt);
 }

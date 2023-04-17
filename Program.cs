@@ -9,6 +9,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using AIChatBot.Extras;
+using AIChatBot.Generators.Picture;
+using AIChatBot.Generators.Picture.StableDiffusion;
+using AIChatBot.Generators.Text;
+using AIChatBot.Generators.Text.Oobabooga;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -122,6 +126,26 @@ internal partial class Program
 
     private async Task AsyncMain()
     {
+        //ITextGenerator generator = new TextGenerator("http://127.0.0.1:5000", new NewApi());
+        //var answer = await generator.Ask("2+2=");
+        //Console.WriteLine(answer);
+
+        IPictureGenerator pictureGenerator = new PictureGenerator("http://127.0.0.1:7860");
+        var images = await pictureGenerator.Generate(
+            "A 25 year old anime woman smiling, looking into the camera, long hair, blonde hair, blue eyes",
+            "(worst quality, low quality:1.4), 3d, cgi, 3d render"
+        );
+
+        var i = 0;
+        foreach (var image in images) {
+            using (image) {
+                var path = $"pic{i++}.png"; // put whatever file path you like here
+                await image.SaveAsync(path, new PngEncoder());
+            }
+        }
+        
+        return;
+
         //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
         //{
         //    Console.WriteLine(eventArgs.Exception.ToString());
@@ -129,24 +153,24 @@ internal partial class Program
 
         try
         {
-            _client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                MessageCacheSize = 1200,
-                LogLevel = LogSeverity.Debug,
-                AlwaysDownloadUsers = true,
-                GatewayIntents =
-                    GatewayIntents.MessageContent |
-                    GatewayIntents.Guilds |
-                    GatewayIntents.GuildMessages
-            });
-
+            // _client = new DiscordSocketClient(new DiscordSocketConfig
+            // {
+            //     MessageCacheSize = 1200,
+            //     LogLevel = LogSeverity.Debug,
+            //     AlwaysDownloadUsers = true,
+            //     GatewayIntents =
+            //         GatewayIntents.MessageContent |
+            //         GatewayIntents.Guilds |
+            //         GatewayIntents.GuildMessages
+            // });
+            //
             _client.Log += Client_Log;
             _client.Ready += StartLoop;
             _client.MessageReceived += Client_MessageReceived;
             _client.GuildMemberUpdated += Client_GuildMemberUpdated;
 
-            await _client.LoginAsync(TokenType.Bot, Config.BotToken);
-            await _client.StartAsync();
+            // await _client.LoginAsync(TokenType.Bot, Config.BotToken);
+            // await _client.StartAsync();
 
             _loop = new Timer
             {
@@ -632,18 +656,10 @@ internal partial class Program
             length_penalty = 1,
             no_repeat_ngram_size = 1,
             early_stopping = true,
-            stopping_strings = new[] { "\\n[", "\n[", "]:", "##", "###", "<noinput>", "\\end" },
+            stopping_strings = new[] { @"\n[", "\n[", "]:", "##", "###", "<noinput>", @"\end" },
             seed = -1,
             add_bos_token = true
         };
-
-        // Extra params I found for Oobabooga that you can try if you know the values
-        //var parameters = new
-        //{
-        //    stop_at_newline = ,
-        //    chat_prompt_size_slider = ,
-        //    chat_generation_attempts
-        //};
 
         // strip random whitespace chars from the input to attempt to last ditch sanitise it to cure emoji psychosis
         oobaboogaInputPrompt = new string(oobaboogaInputPrompt.Where(c => !char.IsControl(c)).ToArray());
@@ -1059,7 +1075,7 @@ internal partial class Program
         var cursorPosition = Console.GetCursorPosition();
 
         // dalai
-        _socket.EmitAsync("request", dalaiRequest);
+        await _socket.EmitAsync("request", dalaiRequest);
 
         // dalai
         _socket.On("result", result =>
@@ -1414,13 +1430,13 @@ internal partial class Program
         sdImgRequest.AddParameter("application/json", overrideSettings.ToString(), ParameterType.RequestBody);
 
         var sdImgResponse = client.Execute(sdImgRequest);
-        if (sdImgResponse.IsSuccessful)
-        {
+        if (!sdImgResponse.IsSuccessful) {
+            Console.WriteLine("Request failed: " + sdImgResponse.ErrorMessage);
+        } else {
             var jsonResponse = JObject.Parse(sdImgResponse.Content);
             var images = jsonResponse["images"].ToObject<JArray>();
 
-            foreach (var imageBase64 in images)
-            {
+            foreach (var imageBase64 in images) {
                 //string base64 = imageBase64.ToString().Split(",", 2)[1];
                 var imageData = imageBase64.ToString();
                 var commaIndex = imageData.IndexOf(',') + 1;
@@ -1437,14 +1453,19 @@ internal partial class Program
                 Task.Delay(1000).Wait();
 
                 await using var fileStream = new FileStream(sdImgFilePath, FileMode.Open, FileAccess.Read);
-                
+
                 var messageReference = msg.Reference ?? new MessageReference(msg.Id);
-                await context.Channel.SendFileAsync(sdImgFilePath, null, false, null, null, false, null, messageReference);
+                await context.Channel.SendFileAsync(
+                    sdImgFilePath, 
+                    null, 
+                    false, 
+                    null, 
+                    null, 
+                    false, 
+                    null,
+                    messageReference
+                );
             }
-        }
-        else
-        {
-            Console.WriteLine("Request failed: " + sdImgResponse.ErrorMessage);
         }
     }
 
