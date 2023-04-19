@@ -36,15 +36,6 @@ internal partial class Program
     private static int _typingTicks;
     private static int _loopCounts;
 
-    private const string OobServer = "127.0.0.1";
-    private static int _oobServerPort = 5000;
-
-    /// <summary>
-    /// by default, use extension API not the default API
-    /// default api is busted atm. enable this with --extensions api in launch args
-    /// </summary>
-    private static string _oobApiEndpoint = "/api/v1/generate";
-
     /// <summary>
     /// Bot's client ID number inside discord (not the token) and gets set in MainLoop after initialisation
     /// </summary>
@@ -116,16 +107,11 @@ internal partial class Program
 
     private SocketIO _socket;
 
-    // here is the default URL for stable diffusion web ui with --API param enabled in the launch parameters
-    private string _stableDiffUrl = "http://127.0.0.1:7860";
-
-    private static void Main()
-    {
+    private static void Main() {
         new Program().AsyncMain().GetAwaiter().GetResult();
     }
 
-    private async Task AsyncMain()
-    {
+    private async Task AsyncMain() {
         //ITextGenerator generator = new TextGenerator("http://127.0.0.1:5000", new NewApi());
         //var answer = await generator.Ask("2+2=");
         //Console.WriteLine(answer);
@@ -144,7 +130,6 @@ internal partial class Program
             }
         }
         
-        return;
 
         //AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
         //{
@@ -183,8 +168,7 @@ internal partial class Program
             Console.WriteLine($"|{DateTime.Now} | Main loop initialised");
 
             // Connect to the LLM with SocketIO (fill in your particular LLM server details here)
-            try
-            {
+            try {
                 // Initialize the Socket.IO connection
                 _socket = new SocketIO("http://localhost:3000");
                 _socket.OnConnected += (_, _) =>
@@ -194,9 +178,7 @@ internal partial class Program
                 };
 
                 await _socket.ConnectAsync();
-            }
-            catch (Exception exception)
-            {
+            } catch (Exception exception) {
                 Console.WriteLine(exception);
             }
 
@@ -241,24 +223,7 @@ internal partial class Program
 
     private Task StartLoop()
     {
-        _server = _client.GetGuild(Config.GuildId);
         
-        Console.WriteLine(_server == null // check if bot is in a server
-            ?  "| A server has not yet been defined."
-            : $"| Server detected: {_server.Name}");
-
-        while (_server?.Name?.Length < 1)
-        {
-            Console.WriteLine("| Waiting for connection to be established by Discord...");
-            Task.Delay(1200);
-        }
-
-        _botUserId = _client.CurrentUser.Id; // <--- bot's user ID is detected and filled in automatically
-
-        _botName = _server.GetUser(_botUserId).Nickname ??  // check if there is a nickname to set
-                   _server.GetUser(_botUserId).Username;    // otherwise, just use username if there is no nickname
-
-        return Task.CompletedTask;
     }
     
     private static Task Client_GuildMemberUpdated(Cacheable<SocketGuildUser, ulong> arg1, SocketGuildUser arg2)
