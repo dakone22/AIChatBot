@@ -7,7 +7,7 @@ namespace AIChatBot.Generators.Text.Oobabooga;
 
 public interface IApi
 {
-    string GetUrl(string url);
+    string GetEndpointUrl(string baseUrl);
 
     HttpContent GetRequestContent(string prompt);
 
@@ -43,9 +43,9 @@ internal interface IJsonApi : IApi
 /// </summary>
 public class NewApi : IJsonApi
 {
-    public string GetUrl(string url)
+    public string GetEndpointUrl(string baseUrl)
     {
-        return url + "/api/v1/generate";
+        return baseUrl + "/api/v1/generate";
     }
 
     public object GetContentObject(string prompt)
@@ -64,9 +64,9 @@ public class NewApi : IJsonApi
 /// </summary>
 public class OldApi : IJsonApi
 {
-    public string GetUrl(string url)
+    public string GetEndpointUrl(string baseUrl)
     {
-        return url + "/run/textgen";
+        return baseUrl + "/run/textgen";
     }
 
     public object GetContentObject(string prompt)

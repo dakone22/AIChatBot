@@ -31,7 +31,7 @@ public class TextGenerator : ITextGenerator
         var requestContent = _api.GetRequestContent(prompt);
         Console.WriteLine(await requestContent.ReadAsStringAsync());
         
-        var response = await _httpClient.PostAsync(_api.GetUrl(_url), requestContent);
+        var response = await _httpClient.PostAsync(_api.GetEndpointUrl(_url), requestContent);
         var responseText = await response.Content.ReadAsStringAsync();
         Console.WriteLine(responseText);
         var answer = _api.GetAnswer(responseText);  // get just the response part of the json
