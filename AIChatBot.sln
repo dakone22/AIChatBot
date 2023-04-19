@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIChatBot", "AIChatBot\AIChatBot.csproj", "{BE7E9B3C-0F7E-4305-985D-6DF06F8C5B72}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIChatBot.Test", "AIChatBot.Test\AIChatBot.Test.csproj", "{FA6FB960-3BEF-4905-9977-DFFFFFBD007B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{BE7E9B3C-0F7E-4305-985D-6DF06F8C5B72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE7E9B3C-0F7E-4305-985D-6DF06F8C5B72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE7E9B3C-0F7E-4305-985D-6DF06F8C5B72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA6FB960-3BEF-4905-9977-DFFFFFBD007B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA6FB960-3BEF-4905-9977-DFFFFFBD007B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA6FB960-3BEF-4905-9977-DFFFFFBD007B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA6FB960-3BEF-4905-9977-DFFFFFBD007B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

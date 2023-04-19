@@ -2,7 +2,7 @@
 
 namespace AIChatBot.Generators.Text;
 
-internal interface ITextGenerator
+public interface ITextGenerator
 {
     public Task<string> Ask(string prompt);
 }
