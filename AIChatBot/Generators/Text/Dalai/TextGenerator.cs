@@ -21,7 +21,7 @@ public class TextGenerator : ITextGenerator
         };
     }
     
-    public async Task<string> Ask(string prompt)
+    public async Task<string> GenerateText(string prompt)
     {
         throw new NotImplementedException("no Dalai implemented");
 

@@ -4,5 +4,5 @@ namespace AIChatBot.Generators.Text;
 
 public interface ITextGenerator
 {
-    public Task<string> Ask(string prompt);
+    public Task<string> GenerateText(string prompt);
 }

@@ -6,7 +6,7 @@ public sealed class TextGeneratorTest
 {
     private class DummyTextGenerator : ITextGenerator
     {
-        public async Task<string> Ask(string prompt)
+        public async Task<string> GenerateText(string prompt)
         {
             // thinking for 5 seconds
             await Task.Delay(5000);
@@ -27,7 +27,7 @@ public sealed class TextGeneratorTest
         };
         
         foreach (var prompt in prompts) {
-            var answer = await textGenerator.Ask(prompt);
+            var answer = await textGenerator.GenerateText(prompt);
             Assert.Equal($"Q: {prompt}\nA: Yes.", answer);
         }
     }

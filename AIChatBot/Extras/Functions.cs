@@ -2,38 +2,44 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 
 namespace AIChatBot.Extras;
 
 internal static partial class Functions
 {
-    public static string IsSimilarToBannedWords(string input, List<string> bannedWords)
+    public static ICollection<string> GetSimilarWords(ICollection<string> wordsToCheck, ICollection<string> referenceWords)
     {
-        var detectedWordsStr = string.Empty;
-        var inputWords = input.Split(' ');
-        foreach (var word in inputWords)
-        {
-            var wordRegexed = NotWordRegex().Replace(word.ToLower(), "");
-            
-            var wordLength = wordRegexed.Length;
-            var threshold = wordLength switch
-            {
+        var similarWords = new List<string>();
+        foreach (var word in wordsToCheck) {
+            var threshold = word.Length switch {
                 <= 4 => 0,
                 > 6 => 2,
                 > 4 => 1
             };
 
-            foreach (var bannedWord in bannedWords.Where(bannedWord => LevenshteinDistance(wordRegexed, bannedWord.ToLower()) <= threshold))
-            {
-                Console.Write($"| BANNED WORD: {word} similar to {bannedWord} ");
-                detectedWordsStr += word + " ";
-            }
+            similarWords.AddRange(referenceWords.Where(referenceWord =>
+                LevenshteinDistance(word, referenceWord.ToLower()) <= threshold));
         }
 
-        if (detectedWordsStr.Length > 0)
-            Console.WriteLine(); // finish on a new line ready for the next console message
+        return similarWords;
+    }
+    
+    public static string RemoveSimilarWords(string text, ICollection<string> referenceWords)
+    {
+        var words = text.Split(' ').Select(word => NotWordRegex().Replace(word.ToLower(), ""));
         
-        return detectedWordsStr;
+        var detectedWords = Functions.GetSimilarWords(words.ToArray(), referenceWords);
+        if (detectedWords.Count <= 2) return text; // TODO: ?
+
+        foreach (var detectedWord in detectedWords.Where(word => word.Length > 2)) {
+            text = text.Replace(detectedWord, "");
+
+            while (text.Contains("  "))
+                text = text.Replace("  ", " ");
+        }
+
+        return text;
     }
 
     public static DateTime GetCurrentTimeInJapan()
@@ -48,8 +54,7 @@ internal static partial class Functions
     {
         var hour = dateTime.Hour;
 
-        return hour switch
-        {
+        return hour switch {
             >= 5 and < 12 => "Morning",
             >= 12 and < 17 => "Afternoon",
             >= 17 and < 21 => "Evening",
@@ -68,14 +73,13 @@ internal static partial class Functions
         for (var j = 0; j <= t.Length; j++) d[0, j] = j;
 
         for (var i = 1; i <= s.Length; i++)
-            for (var j = 1; j <= t.Length; j++)
-            {
-                var cost = GetSubstitutionCost(s[i - 1], t[j - 1]);
+        for (var j = 1; j <= t.Length; j++) {
+            var cost = GetSubstitutionCost(s[i - 1], t[j - 1]);
 
-                d[i, j] = Math.Min(
-                    Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-                    d[i - 1, j - 1] + cost);
-            }
+            d[i, j] = Math.Min(
+                Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                d[i - 1, j - 1] + cost);
+        }
 
         return d[s.Length, t.Length];
     }
@@ -92,8 +96,7 @@ internal static partial class Functions
 
         return 1;
     }
-    
+
     [GeneratedRegex("[^a-zA-Z0-9]+")]
     private static partial Regex NotWordRegex();
-
 }

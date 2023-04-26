@@ -25,7 +25,7 @@ public class TextGenerator : ITextGenerator
         _httpClient = new HttpClient();
     }
 
-    public async Task<string> Ask(string prompt)
+    public async Task<string> GenerateText(string prompt)
     {
 
         var requestContent = _api.GetRequestContent(prompt);
